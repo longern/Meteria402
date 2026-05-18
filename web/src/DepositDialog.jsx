@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import QRCode from "qrcode";
 import Modal from "./Modal";
+import { useI18n } from "./i18n";
 
 function hasEthereumBrowser() {
   return typeof window !== "undefined" && Boolean(window.ethereum);
@@ -63,6 +64,7 @@ export default function DepositDialog({
   waitForAutopayAuthorization,
   loadAccount,
 }) {
+  const { t } = useI18n();
   const [amount, setAmount] = useState("5.00");
   const [phase, setPhase] = useState("input"); // 'input' | 'creating' | 'waiting' | 'success'
   const [qrUrl, setQrUrl] = useState("");
@@ -280,7 +282,7 @@ export default function DepositDialog({
   if (!open) return null;
 
   return (
-    <Modal open={open} onClose={onClose} title="Add Deposit" titleId="deposit-title">
+    <Modal open={open} onClose={onClose} title={t("Add Deposit")} titleId="deposit-title">
       <div className="dialog-form">
         <label>
           <span>Deposit amount</span>
@@ -301,11 +303,11 @@ export default function DepositDialog({
           <>
             {hasEthereumBrowser() ? (
               <button disabled={isBusy} className="primary" onClick={payWithBrowserWallet}>
-                Pay {amount} {paymentCurrency}
+                {t("Pay deposit")} {amount} {paymentCurrency}
               </button>
             ) : (
               <button disabled={isBusy} className="primary" onClick={startWalletPayment}>
-                Pay with wallet
+                {t("Pay with wallet")}
               </button>
             )}
           </>
@@ -388,7 +390,7 @@ export default function DepositDialog({
               style={{ marginTop: 8 }}
               onClick={checkStatus}
             >
-              I&apos;ve paid — Refresh
+              {t("I've paid — Refresh")}
             </button>
           </>
         )}

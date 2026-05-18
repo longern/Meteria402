@@ -129,7 +129,7 @@ export default function SettingsView({
                 setRebindOpen(true);
               }}
             >
-              Rebind
+              {t("Rebind")}
             </button>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function SettingsView({
                 setMinRechargeOpen(true);
               }}
             >
-              Edit
+              {t("Edit")}
             </button>
           </div>
         </div>
@@ -199,7 +199,7 @@ export default function SettingsView({
                 className="primary"
                 disabled={submitting || isBusy || !account || !newOwner.trim()}
               >
-                {submitting ? "Confirming..." : "Rebind wallet"}
+                {submitting ? t("Confirming...") : t("Rebind wallet")}
               </button>
             </div>
           </form>
@@ -211,7 +211,7 @@ export default function SettingsView({
         onClose={() => {
           if (!savingMinRecharge) setMinRechargeOpen(false);
         }}
-        title="Edit Auto-Recharge"
+        title={t("Edit Auto-Recharge")}
         titleId="edit-auto-recharge-title"
       >
         <div className="settings-dialog-content">
@@ -241,7 +241,7 @@ export default function SettingsView({
                 className="primary"
                 disabled={savingMinRecharge || isBusy || !account || !minRechargeAmount.trim()}
               >
-                {savingMinRecharge ? "Saving..." : "Save minimum"}
+                {savingMinRecharge ? t("Saving...") : t("Save minimum")}
               </button>
             </div>
           </form>

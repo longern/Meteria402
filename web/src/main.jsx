@@ -95,6 +95,7 @@ function ConsoleApp({ initialIdentity, onSessionChange = () => {} }) {
     setAccount,
     accountMissing,
     apiKeys,
+    apiKeysLoaded,
     setApiKeys,
     lastInvoices,
     setLastInvoices,
@@ -733,6 +734,7 @@ function ConsoleApp({ initialIdentity, onSessionChange = () => {} }) {
         {!accountMissing && activeView === "keys" && (
           <KeysView
             apiKeys={apiKeys}
+            apiKeysLoaded={apiKeysLoaded}
             isBusy={isMutating}
             busy={busy}
             loading={loading}
@@ -741,7 +743,6 @@ function ConsoleApp({ initialIdentity, onSessionChange = () => {} }) {
             disableApiKey={disableApiKey}
             enableApiKey={enableApiKey}
             deleteApiKey={deleteApiKey}
-            navigateConsoleView={navigateConsoleView}
             createKeyOpen={createKeyOpen}
             closeCreateKeyDialog={closeCreateKeyDialog}
             createManagedApiKey={createManagedApiKey}
@@ -830,6 +831,8 @@ function ActivationView({
   loadAccount,
   waitForAutopayAuthorization,
 }) {
+  const { t } = useI18n();
+
   return (
     <>
       <section className="activation-panel">
@@ -846,7 +849,7 @@ function ActivationView({
         </div>
         <div className="activation-actions">
           <button disabled={isBusy} className="primary" onClick={openDepositDialog}>
-            Add deposit
+            {t("Add deposit")}
           </button>
         </div>
       </section>

@@ -12,6 +12,7 @@ export default function useConsoleData({
   const [account, setAccount] = useState(null);
   const [accountMissing, setAccountMissing] = useState(false);
   const [apiKeys, setApiKeys] = useState([]);
+  const [apiKeysLoaded, setApiKeysLoaded] = useState(false);
   const [lastInvoices, setLastInvoices] = useState([]);
   const [deposits, setDeposits] = useState([]);
   const [depositsLoading, setDepositsLoading] = useState(false);
@@ -29,6 +30,7 @@ export default function useConsoleData({
     setAccountMissing(true);
     setDeposits([]);
     setApiKeys([]);
+    setApiKeysLoaded(false);
     setRequests([]);
     setRequestsCursor(null);
     setRequestsPrevCursors([]);
@@ -85,6 +87,7 @@ export default function useConsoleData({
     } catch (error) {
       show(readableError(error));
     } finally {
+      setApiKeysLoaded(true);
       setLoadingFlag("apiKeys", false);
     }
   }
@@ -163,6 +166,7 @@ export default function useConsoleData({
     setAccount,
     accountMissing,
     apiKeys,
+    apiKeysLoaded,
     setApiKeys,
     lastInvoices,
     setLastInvoices,

@@ -48,6 +48,22 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function normalizeOpenAiCompatModelId(id: string): { id: string; score: number } | null {
+  const parts = id.split("/");
+  if (parts.length < 2) return null;
+
+  const modelId = parts.at(-1);
+  const namespaces = parts.slice(0, -1);
+  if (!modelId || !namespaces.every((namespace) => namespace === "openai")) {
+    return null;
+  }
+
+  return {
+    id: modelId,
+    score: namespaces.length === 1 ? 2 : 1,
+  };
+}
+
 function meteredRequestLeaseSeconds(env: Env): number {
   return parsePositiveInt(env.METERED_REQUEST_LEASE_SECONDS ?? "3600", 3600);
 }
@@ -401,23 +417,31 @@ async function handleOpenAiModelsRequest(
     );
   }
 
+  const modelsById = new Map<
+    string,
+    { score: number; model: Record<string, unknown> }
+  >();
+  for (const model of body.data) {
+    if (!model || typeof model !== "object") continue;
+
+    const rawId = (model as Record<string, unknown>).id;
+    if (typeof rawId !== "string") continue;
+
+    const normalized = normalizeOpenAiCompatModelId(rawId);
+    if (!normalized) continue;
+
+    const current = modelsById.get(normalized.id);
+    if (!current || normalized.score > current.score) {
+      modelsById.set(normalized.id, {
+        score: normalized.score,
+        model: { ...(model as Record<string, unknown>), id: normalized.id },
+      });
+    }
+  }
+
   return jsonResponse({
     ...body,
-    data: body.data
-      .filter((model): model is Record<string, unknown> => {
-        return (
-          Boolean(model) &&
-          typeof model === "object" &&
-          typeof (model as Record<string, unknown>).id === "string" &&
-          ((model as Record<string, unknown>).id as string).startsWith(
-            "openai/",
-          )
-        );
-      })
-      .map((model) => ({
-        ...model,
-        id: (model.id as string).slice("openai/".length),
-      })),
+    data: [...modelsById.values()].map((entry) => entry.model),
   });
 }
 

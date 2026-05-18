@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import CardSection from "../CardSection";
 import DataList, { DataListItem } from "../DataList";
 import { ChevronIcon, RefreshIcon } from "../icons";
+import { useI18n } from "../i18n";
 import { formatDateTime, shortId } from "../utils";
 
 function InvoiceCopyIcon({ copied }) {
@@ -37,6 +38,7 @@ export default function UsageView({
 }) {
   const [copiedInvoiceId, setCopiedInvoiceId] = useState("");
   const invoiceCopyTimerRef = useRef(null);
+  const { t } = useI18n();
 
   useEffect(() => () => {
     if (invoiceCopyTimerRef.current) {
@@ -86,12 +88,12 @@ export default function UsageView({
   return (
     <>
       <CardSection
-        title="Model Calls"
+        title={t("Model Calls")}
         actions={
           <button
             className="icon-button plain"
             type="button"
-            aria-label="Refresh model calls"
+            aria-label={t("Refresh model calls")}
             disabled={loading.requests}
             onClick={() => loadRequests()}
           >
@@ -174,12 +176,12 @@ export default function UsageView({
       </CardSection>
 
       <CardSection
-        title="Invoices"
+        title={t("Invoices")}
         actions={
           <button
             className="icon-button plain"
             type="button"
-            aria-label="Refresh invoices"
+            aria-label={t("Refresh invoices")}
             disabled={loading.invoices}
             onClick={loadInvoices}
           >
@@ -188,7 +190,7 @@ export default function UsageView({
         }
       >
         <div className="card-action-row">
-          <button disabled={isBusy} className="primary" onClick={autopayInvoice}>Pay invoice</button>
+          <button disabled={isBusy} className="primary" onClick={autopayInvoice}>{t("Pay invoice")}</button>
         </div>
         {lastInvoices.length ? (
           <>

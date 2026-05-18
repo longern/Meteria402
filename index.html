@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fullscreen Hold Exit</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+      color: #fff;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    .stage {
+      position: relative;
+      display: grid;
+      width: 100vw;
+      height: 100vh;
+      place-items: center;
+      background: #000;
+    }
+
+    .fullscreen-button {
+      min-width: 148px;
+      min-height: 52px;
+      border: 1px solid rgba(255, 255, 255, 0.62);
+      border-radius: 8px;
+      background: #000;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0;
+      cursor: pointer;
+      transition:
+        transform 160ms ease,
+        background 160ms ease,
+        border-color 160ms ease;
+    }
+
+    .fullscreen-button:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .fullscreen-button:active {
+      transform: translateY(0);
+    }
+
+    .stage.is-fullscreen .fullscreen-button {
+      opacity: 0;
+      pointer-events: none;
+      transform: scale(0.96);
+    }
+
+    .stage.is-fullscreen,
+    .stage.is-fullscreen * {
+      cursor: none;
+    }
+
+    .hold-layer {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease;
+    }
+
+    .stage.is-fullscreen .hold-layer {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .hold-indicator {
+      position: relative;
+      display: grid;
+      width: 148px;
+      height: 148px;
+      place-items: center;
+      opacity: 0;
+      transform: scale(0.74);
+      transition:
+        opacity 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .stage.is-holding .hold-indicator {
+      opacity: 1;
+      transform: scale(calc(0.96 + var(--hold-progress, 0) * 0.08));
+    }
+
+    .stage.is-releasing .hold-indicator {
+      animation: hold-release 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+
+    .hold-ring {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      transform: rotate(-90deg);
+    }
+
+    .hold-ring-base,
+    .hold-ring-progress,
+    .hold-ring-glow {
+      cx: 74px;
+      cy: 74px;
+      r: 58px;
+      fill: none;
+      stroke-linecap: butt;
+      stroke-width: 12px;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .hold-ring-base {
+      stroke: rgba(255, 255, 255, 0.14);
+    }
+
+    .hold-ring-progress,
+    .hold-ring-glow {
+      stroke: #fff;
+      stroke-dasharray: calc(var(--hold-progress, 0) * 364.425) 364.425;
+    }
+
+    .hold-ring-progress {
+      stroke: rgba(255, 255, 255, 0.96);
+    }
+
+    .hold-ring-glow {
+      opacity: calc(var(--hold-progress, 0) * 0.85);
+      filter: url(#ringGlow);
+    }
+
+    .hold-core {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      width: 84px;
+      height: 84px;
+      place-items: center;
+      border-radius: 50%;
+      background: #000;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-align: center;
+      line-height: 1.25;
+      opacity: 0.88;
+    }
+
+    @keyframes hold-release {
+      0% {
+        opacity: 1;
+        transform: scale(calc(0.96 + var(--hold-progress, 0) * 0.08));
+        filter: blur(0);
+      }
+      55% {
+        opacity: 0.72;
+        transform: scale(0.9);
+        filter: blur(0.4px);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.76);
+        filter: blur(1px);
+      }
+    }
+
+    .hint {
+      position: absolute;
+      left: 50%;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      width: min(460px, calc(100vw - 40px));
+      margin: 0;
+      color: rgba(255, 255, 255, 0.58);
+      font-size: 14px;
+      line-height: 1.4;
+      text-align: center;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+
+    .stage.is-fullscreen.is-holding .hint,
+    .stage.is-fullscreen.show-hint .hint {
+      opacity: 1;
+    }
+
+    .flash {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .stage.is-exiting .flash {
+      animation: flash-out 360ms ease;
+    }
+
+    @keyframes flash-out {
+      0% {
+        opacity: 0;
+      }
+      45% {
+        opacity: 0.18;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage" id="stage">
+    <button class="fullscreen-button" id="fullscreenButton" type="button">全屏</button>
+
+    <div class="hold-layer" id="holdLayer" aria-label="长按退出全屏">
+      <div class="hold-indicator" aria-hidden="true">
+        <svg class="hold-ring" viewBox="0 0 148 148">
+          <defs>
+            <filter id="ringGlow" x="-45%" y="-45%" width="190%" height="190%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="softGlow" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="wideGlow" />
+              <feMerge>
+                <feMergeNode in="wideGlow" />
+                <feMergeNode in="softGlow" />
+              </feMerge>
+            </filter>
+          </defs>
+          <circle class="hold-ring-base" />
+          <circle class="hold-ring-glow" />
+          <circle class="hold-ring-progress" />
+        </svg>
+        <div class="hold-core">长按<br />退出</div>
+      </div>
+      <p class="hint">长按页面或按 Esc 退出全屏</p>
+    </div>
+
+    <div class="flash" aria-hidden="true"></div>
+  </main>
+
+  <script>
+    const HOLD_DURATION = 1100;
+    const stage = document.getElementById("stage");
+    const fullscreenButton = document.getElementById("fullscreenButton");
+    const holdLayer = document.getElementById("holdLayer");
+
+    let holdStart = 0;
+    let holdFrame = 0;
+    let releaseFrame = 0;
+    let holdSource = "";
+    let hintTimer = 0;
+
+    function isFullscreen() {
+      return document.fullscreenElement === stage;
+    }
+
+    async function enterFullscreen() {
+      if (isFullscreen()) return;
+      await stage.requestFullscreen();
+    }
+
+    async function exitFullscreen() {
+      stopHold("", { release: false });
+      stage.classList.add("is-exiting");
+      window.setTimeout(() => stage.classList.remove("is-exiting"), 380);
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    }
+
+    function syncFullscreenState() {
+      stage.classList.toggle("is-fullscreen", isFullscreen());
+      if (!isFullscreen()) stopHold();
+    }
+
+    function startHold(source) {
+      if (!isFullscreen() || holdSource) return;
+      if (releaseFrame) {
+        cancelAnimationFrame(releaseFrame);
+        releaseFrame = 0;
+      }
+      stage.classList.remove("is-releasing");
+      holdSource = source;
+      holdStart = performance.now();
+      stage.classList.add("is-holding");
+      updateHold();
+    }
+
+    function stopHold(source = "", options = {}) {
+      if (source && source !== holdSource) return;
+      const shouldRelease = options.release !== false;
+      const progress = Number(stage.style.getPropertyValue("--hold-progress")) || 0;
+      const hadProgress = holdStart && progress > 0.02;
+      holdSource = "";
+      holdStart = 0;
+      stage.classList.remove("is-holding");
+      if (hadProgress && shouldRelease && progress < 0.995 && isFullscreen()) {
+        releaseHoldProgress(progress);
+      } else {
+        if (shouldRelease || progress < 0.995) {
+          stage.style.setProperty("--hold-progress", "0");
+        }
+      }
+      if (holdFrame) {
+        cancelAnimationFrame(holdFrame);
+        holdFrame = 0;
+      }
+    }
+
+    function releaseHoldProgress(fromProgress) {
+      const duration = 240;
+      const startedAt = performance.now();
+      stage.classList.add("is-releasing");
+      if (releaseFrame) cancelAnimationFrame(releaseFrame);
+
+      function tick(now) {
+        const elapsed = now - startedAt;
+        const t = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const nextProgress = fromProgress * (1 - eased);
+        stage.style.setProperty("--hold-progress", String(nextProgress));
+
+        if (t < 1) {
+          releaseFrame = requestAnimationFrame(tick);
+          return;
+        }
+
+        releaseFrame = 0;
+        stage.classList.remove("is-releasing");
+        stage.style.setProperty("--hold-progress", "0");
+      }
+
+      releaseFrame = requestAnimationFrame(tick);
+    }
+
+    function showTemporaryHint() {
+      if (!isFullscreen()) return;
+      stage.classList.add("show-hint");
+      if (hintTimer) window.clearTimeout(hintTimer);
+      hintTimer = window.setTimeout(() => {
+        stage.classList.remove("show-hint");
+        hintTimer = 0;
+      }, 2800);
+    }
+
+    function updateHold() {
+      const elapsed = performance.now() - holdStart;
+      const progress = Math.min(elapsed / HOLD_DURATION, 1);
+      stage.style.setProperty("--hold-progress", String(progress));
+
+      if (progress >= 1) {
+        exitFullscreen().catch(console.error);
+        return;
+      }
+
+      holdFrame = requestAnimationFrame(updateHold);
+    }
+
+    fullscreenButton.addEventListener("click", () => {
+      enterFullscreen().catch(console.error);
+    });
+
+    holdLayer.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      holdLayer.setPointerCapture?.(event.pointerId);
+      startHold("pointer");
+    });
+
+    holdLayer.addEventListener("pointermove", showTemporaryHint);
+
+    holdLayer.addEventListener("pointerup", () => stopHold("pointer"));
+    holdLayer.addEventListener("pointercancel", () => stopHold("pointer"));
+    holdLayer.addEventListener("pointerleave", () => stopHold("pointer"));
+
+    document.addEventListener("fullscreenchange", syncFullscreenState);
+    syncFullscreenState();
+  </script>
+</body>
+</html>

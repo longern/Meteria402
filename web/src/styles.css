@@ -1334,6 +1334,35 @@ textarea {
   min-width: 760px;
 }
 
+.api-key-list-region,
+.autopay-list-region {
+  position: relative;
+}
+
+.api-key-list-region.is-refreshing,
+.autopay-list-region.is-refreshing {
+  min-height: 96px;
+}
+
+.api-key-list-overlay,
+.autopay-list-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  min-height: 96px;
+  place-items: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.autopay-list-loading {
+  display: grid;
+  min-height: 96px;
+  place-items: center;
+  margin-block: 16px;
+}
+
 .deposit-table {
   min-width: 700px;
 }
@@ -1586,6 +1615,7 @@ img.deposit-coin-icon {
   box-shadow: none;
 }
 
+.api-key-list-loading,
 .deposit-history-loading {
   display: grid;
   min-height: 96px;
@@ -1901,6 +1931,7 @@ img.deposit-coin-icon {
     flex-direction: column;
     gap: 4px;
     align-items: end;
+    align-self: stretch;
     justify-items: end;
     min-height: 42px;
   }
@@ -1961,6 +1992,7 @@ img.deposit-coin-icon {
 
   .deposit-mobile-side > .icon-button.open-link {
     justify-self: end;
+    margin-top: auto;
     width: 24px;
     height: 24px;
     min-height: 24px;

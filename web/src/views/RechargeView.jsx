@@ -140,7 +140,7 @@ export default function RechargeView({
             <button
               className="icon-button plain"
               type="button"
-              aria-label="Refresh balance"
+              aria-label={t("Refresh balance")}
               disabled={loading.walletBalance}
               onClick={() => loadAutopayWalletBalance()}
             >
@@ -232,7 +232,7 @@ export default function RechargeView({
           <button
             className="icon-button plain"
             type="button"
-            aria-label="Refresh deposit history"
+            aria-label={t("Refresh deposit history")}
             disabled={isBusy || depositsLoading}
             onClick={loadDeposits}
           >
@@ -308,16 +308,16 @@ export default function RechargeView({
       </CardSection>
 
       {editEndpointOpen && (
-        <Modal open={editEndpointOpen} onClose={closeEditEndpointDialog} title="Edit Autopay Endpoint" titleId="edit-endpoint-title">
+        <Modal open={editEndpointOpen} onClose={closeEditEndpointDialog} title={t("Edit Autopay Endpoint")} titleId="edit-endpoint-title">
           <div className="dialog-form">
             <label>
-              <span>Endpoint URL</span>
+              <span>{t("Endpoint URL")}</span>
               <input value={autopayUrl} autoComplete="url" onChange={(event) => setAutopayUrl(event.target.value)} />
             </label>
           </div>
           <div className="dialog-actions">
-            <button type="button" className="secondary" onClick={closeEditEndpointDialog}>Cancel</button>
-            <button type="button" className="primary" disabled={isBusy || !autopayUrl.trim()} onClick={updateAutopayEndpoint}>Save</button>
+            <button type="button" className="secondary" onClick={closeEditEndpointDialog}>{t("Cancel")}</button>
+            <button type="button" className="primary" disabled={isBusy || !autopayUrl.trim()} onClick={updateAutopayEndpoint}>{t("Save")}</button>
           </div>
         </Modal>
       )}
@@ -342,7 +342,7 @@ export default function RechargeView({
         <Modal
           open={!!paymentDialog}
           onClose={closePaymentDialog}
-          title="Pay Deposit"
+          title={t("Pay deposit")}
           className="payment-modal"
           titleId="payment-title"
         >
@@ -369,11 +369,11 @@ export default function RechargeView({
               <div className="row">
                 {paymentDialog.url && (
                   <a className="button-link secondary" href={paymentDialog.url} target="_blank" rel="noreferrer">
-                    Open link
+                    {t("Open link")}
                   </a>
                 )}
                 {(paymentDialog.status === "settled" || paymentDialog.status === "failed") && (
-                  <button type="button" className="secondary" onClick={closePaymentDialog}>Close</button>
+                  <button type="button" className="secondary" onClick={closePaymentDialog}>{t("Close")}</button>
                 )}
               </div>
             </div>

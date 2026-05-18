@@ -39,6 +39,7 @@ function CopyIcon({ copied }) {
 
 export default function KeysView({
   apiKeys,
+  apiKeysLoaded,
   isBusy,
   busy,
   loading,
@@ -47,7 +48,6 @@ export default function KeysView({
   disableApiKey,
   enableApiKey,
   deleteApiKey,
-  navigateConsoleView,
   createKeyOpen,
   closeCreateKeyDialog,
   createManagedApiKey,
@@ -138,7 +138,7 @@ export default function KeysView({
   function renderApiKeyActionMenu(item) {
     const isDisabled = item.status === "disabled";
     const toggleAction = isDisabled ? enableApiKey : disableApiKey;
-    const toggleLabel = isDisabled ? "Enable" : "Disable";
+    const toggleLabel = isDisabled ? t("Enable") : t("Disable");
 
     return (
       <div className={actionMenuShellClassName()} data-action-menu-shell>
@@ -161,7 +161,7 @@ export default function KeysView({
             {toggleLabel}
           </button>
           <button type="button" role="menuitem" className="danger" onClick={() => handleApiKeyAction(deleteApiKey, item.id)}>
-            Delete
+            {t("Delete")}
           </button>
         </ActionMenu>
       </div>
@@ -170,7 +170,7 @@ export default function KeysView({
 
   return (
     <>
-      <CardSection title="Base URL">
+      <CardSection title={t("Base URL")}>
         <div className="endpoint-picker">
           <label>
             <span>Provider</span>
@@ -218,7 +218,7 @@ export default function KeysView({
           <button
             className="icon-button plain"
             type="button"
-            aria-label="Refresh API keys"
+            aria-label={t("Refresh API keys")}
             disabled={loading.apiKeys}
             onClick={loadApiKeys}
           >
@@ -227,11 +227,14 @@ export default function KeysView({
         }
       >
         <div className="card-action-row">
-          <button disabled={isBusy} className="primary" onClick={openCreateKeyDialog}>Create key</button>
+          <button disabled={isBusy} className="primary" onClick={openCreateKeyDialog}>{t("Create key")}</button>
         </div>
 
         {apiKeys.length ? (
-          <>
+          <div
+            className={`api-key-list-region${loading.apiKeys ? " is-refreshing" : ""}`}
+            aria-busy={loading.apiKeys}
+          >
             <div className="api-key-table-wrap">
               <table className="api-key-table">
                 <thead>
@@ -288,12 +291,19 @@ export default function KeysView({
                 </DataListItem>
               ))}
             </DataList>
-          </>
+            {loading.apiKeys && (
+              <div className="api-key-list-overlay" aria-label="Refreshing API keys">
+                <div className="spinner" />
+              </div>
+            )}
+          </div>
+        ) : loading.apiKeys || !apiKeysLoaded ? (
+          <div className="api-key-list-loading" aria-label="Loading API keys">
+            <div className="spinner" />
+          </div>
         ) : (
           <div className="empty-state">
-            <strong>No keys</strong>
-            <p>Create a deposit first. The Worker will generate the initial API key after settlement.</p>
-            <button type="button" className="primary" onClick={() => navigateConsoleView("recharge")}>Go to Recharge</button>
+            <strong>{t("No API keys")}</strong>
           </div>
         )}
       </CardSection>
@@ -302,7 +312,7 @@ export default function KeysView({
         <Modal
           open={createKeyOpen}
           onClose={closeCreateKeyDialog}
-          title="Create API Key"
+          title={t("Create API Key")}
           titleId="create-key-title"
         >
           <form onSubmit={createManagedApiKey}>
@@ -339,9 +349,9 @@ export default function KeysView({
               </div>
             )}
             <div className="dialog-actions">
-              <button type="button" className="secondary" onClick={closeCreateKeyDialog}>Close</button>
+              <button type="button" className="secondary" onClick={closeCreateKeyDialog}>{t("Close")}</button>
               <button type="submit" className="primary" disabled={busy === "createApiKey"}>
-                {busy === "createApiKey" ? "Creating..." : "Create key"}
+                {busy === "createApiKey" ? t("Creating...") : t("Create key")}
               </button>
             </div>
           </form>

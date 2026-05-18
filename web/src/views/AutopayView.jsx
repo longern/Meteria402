@@ -9,6 +9,7 @@ import CardSection from "../CardSection";
 import DataList, { DataListItem } from "../DataList";
 import Modal from "../Modal";
 import { RefreshIcon } from "../icons";
+import { useI18n } from "../i18n";
 import {
   formatDateTime,
   shortAddress,
@@ -39,6 +40,7 @@ export default function AutopayView({
   copyCapApprovalLink,
 }) {
   const [openCapabilityActionMenu, setOpenCapabilityActionMenu] = useState(null);
+  const { t } = useI18n();
 
   useEffect(() => {
     function closeActionMenu(event) {
@@ -113,7 +115,7 @@ export default function AutopayView({
             disabled={item.status === "revoked"}
             onClick={() => handleCapabilityAction(revokeCapability, item.id)}
           >
-            Revoke
+            {t("Revoke")}
           </button>
         </ActionMenu>
       </div>
@@ -123,13 +125,13 @@ export default function AutopayView({
   return (
     <>
       <CardSection
-        title="Pre-approvals"
+        title={t("Pre-approvals")}
         actions={
           <button
             className="icon-button plain"
             type="button"
-            aria-label="Refresh autopay limits"
-            title="Refresh autopay limits"
+            aria-label={t("Refresh autopay limits")}
+            title={t("Refresh autopay limits")}
             disabled={capabilitiesLoading}
             onClick={loadCapabilities}
           >
@@ -138,12 +140,15 @@ export default function AutopayView({
         }
       >
         <div className="card-action-row">
-          <button disabled={isBusy} className="primary" onClick={openCapCreate}>Create limit</button>
+          <button disabled={isBusy} className="primary" onClick={openCapCreate}>{t("Create limit")}</button>
         </div>
         <p className="muted">Scoped autopay authorizations: amount limits, validity period, and remaining budget.</p>
 
         {capabilities.length ? (
-          <>
+          <div
+            className={`autopay-list-region${capabilitiesLoading ? " is-refreshing" : ""}`}
+            aria-busy={capabilitiesLoading}
+          >
             <div className="autopay-table-wrap">
               <table className="data-table autopay-table">
                 <thead>
@@ -196,7 +201,16 @@ export default function AutopayView({
                 </DataListItem>
               ))}
             </DataList>
-          </>
+            {capabilitiesLoading && (
+              <div className="autopay-list-overlay" aria-label="Refreshing pre-approvals">
+                <div className="spinner" />
+              </div>
+            )}
+          </div>
+        ) : capabilitiesLoading ? (
+          <div className="autopay-list-loading" aria-label="Loading pre-approvals">
+            <div className="spinner" />
+          </div>
         ) : (
           <p className="muted">No autopay limits. Create one to enable scoped wallet pre-approval.</p>
         )}
@@ -206,7 +220,7 @@ export default function AutopayView({
         <Modal
           open={capCreateOpen}
           onClose={closeCapCreate}
-          title="Create Autopay Limit"
+          title={t("Create Autopay Limit")}
           titleId="create-cap-title"
         >
           <form onSubmit={createCapability}>
@@ -225,9 +239,9 @@ export default function AutopayView({
               </label>
             </div>
             <div className="dialog-actions">
-              <button type="button" className="secondary" onClick={closeCapCreate}>Cancel</button>
+              <button type="button" className="secondary" onClick={closeCapCreate}>{t("Cancel")}</button>
               <button type="submit" className="primary" disabled={isBusy}>
-                {busy === "createCapability" ? "Creating..." : "Create limit"}
+                {busy === "createCapability" ? t("Creating...") : t("Create limit")}
               </button>
             </div>
           </form>
@@ -238,7 +252,7 @@ export default function AutopayView({
         <Modal
           open={!!capDialog}
           onClose={closeCapDialog}
-          title={capDialog.status === "done" ? "Limit created" : "Approve limit"}
+          title={capDialog.status === "done" ? t("Limit created") : t("Approve limit")}
           className="payment-modal"
           titleId="cap-title"
         >
@@ -299,7 +313,7 @@ export default function AutopayView({
                 </p>
                 {capDialog.error && <p className="form-error">{capDialog.error}</p>}
                 <div className="wallet-row">
-                  <button type="button" className="secondary" onClick={closeCapDialog}>Close</button>
+                  <button type="button" className="secondary" onClick={closeCapDialog}>{t("Close")}</button>
                 </div>
               </div>
             )}
