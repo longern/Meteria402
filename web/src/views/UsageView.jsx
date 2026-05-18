@@ -3,7 +3,7 @@ import CardSection from "../CardSection";
 import DataList, { DataListItem } from "../DataList";
 import { ChevronIcon, RefreshIcon } from "../icons";
 import { useI18n } from "../i18n";
-import { formatDateTime, shortId } from "../utils";
+import { formatDateTime, shortId, formatMoneyCompact } from "../utils";
 
 function InvoiceCopyIcon({ copied }) {
   if (copied) {
@@ -74,7 +74,7 @@ export default function UsageView({
     if (item.status !== "completed" || item.final_cost == null || item.final_cost === "") {
       return "--";
     }
-    return `$${item.final_cost}`;
+    return formatMoneyCompact(item.final_cost);
   }
 
   function renderInvoiceStatus(status) {
@@ -208,7 +208,7 @@ export default function UsageView({
                 <tbody>
                   {lastInvoices.map((item) => (
                     <tr key={item.id}>
-                      <td><strong>{item.amount_due} {item.currency}</strong></td>
+                      <td><strong>{formatMoneyCompact(item.amount_due)}</strong></td>
                       <td>{renderInvoiceStatus(item.status)}</td>
                       <td>{item.created_at ? formatDateTime(item.created_at) : "--"}</td>
                       <td>{item.paid_at ? formatDateTime(item.paid_at) : "--"}</td>
@@ -223,7 +223,7 @@ export default function UsageView({
               {lastInvoices.map((item) => (
                 <DataListItem className="invoice-mobile-item" key={item.id}>
                   <div className="invoice-mobile-main">
-                    <strong>{item.amount_due} {item.currency}</strong>
+                    <strong>{formatMoneyCompact(item.amount_due)}</strong>
                     <span className="invoice-mobile-id-row">
                       <span className="mono">{shortId(item.id)}</span>
                       <button

@@ -23,7 +23,6 @@ paymentRequiredResponse,
 readJsonObject
 } from "./http";
 import {
-formatMoney,
 parsePositiveInt
 } from "./money";
 import {
@@ -562,7 +561,7 @@ async function startMeteredRequest(
       "unpaid_invoice",
       "An unpaid invoice must be paid before making another request.",
       {
-        unpaid_invoice_total: formatMoney(account.unpaid_invoice_total),
+        unpaid_invoice_total: account.unpaid_invoice_total,
       },
     );
   }
@@ -571,8 +570,8 @@ async function startMeteredRequest(
       "deposit_required",
       "A refundable deposit is required before making this request.",
       {
-        required_deposit: formatMoney(account.min_deposit_required),
-        current_deposit: formatMoney(account.deposit_balance),
+        required_deposit: account.min_deposit_required,
+        current_deposit: account.deposit_balance,
       },
     );
   }
@@ -584,8 +583,8 @@ async function startMeteredRequest(
       "api_key_spend_limit_exceeded",
       "This API key has reached its spend limit.",
       {
-        spend_limit: formatMoney(account.api_key_spend_limit),
-        spent_amount: formatMoney(account.api_key_spent_amount),
+        spend_limit: account.api_key_spend_limit,
+        spent_amount: account.api_key_spent_amount,
       },
     );
   }
